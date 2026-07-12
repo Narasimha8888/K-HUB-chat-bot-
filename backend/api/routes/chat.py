@@ -35,7 +35,38 @@ async def ai_chat(request: ChatRequest, db: Session = Depends(get_db)):
     rag = RAGService()
     rag_context = rag.query_context(request.message)
 
-    chat_system_prompt = "You are an intelligent academic AI assistant. Always format your responses beautifully using Markdown. Use clear headings (###), bullet points, and bold text to structure your answers logically and make them easy to read. Avoid giant walls of text."
+    # Initialize client
+    client = OllamaClient()
+
+    # --- STRICT VALIDATION LAYER ---
+    validation_prompt = (
+        f"Analyze the following user request and determine if it is strictly about an educational, academic, or study-related topic.\n"
+        f"Topics like cooking, recipes, movies, entertainment, sports, politics, and personal advice are NOT educational.\n"
+        f"User Request: \"{request.message}\"\n\n"
+        f"Reply with ONLY the word 'YES' if it is educational, or 'NO' if it is not."
+    )
+    
+    try:
+        validation_response = await client.generate(prompt=validation_prompt)
+        is_educational = "YES" in validation_response.upper()
+    except Exception:
+        is_educational = True # Fallback to true if validation fails
+
+    if not is_educational:
+        refusal_msg = "I'm sorry for the confusion, but as an academic AI assistant, my primary role is to provide information and assistance related to studies and education. I don't specialize in non-educational topics like this."
+        add_message(db, session_id=session_id, role="assistant", content=refusal_msg)
+        
+        async def refusal_generator():
+            yield f"data: {json.dumps({'message': {'content': refusal_msg}})}\n\n"
+            yield f"data: {json.dumps({'done': True, 'session_id': session_id})}\n\n"
+            
+        return StreamingResponse(refusal_generator(), media_type="text/event-stream")
+    # --- END VALIDATION LAYER ---
+
+    chat_system_prompt = (
+        "You are an intelligent academic AI assistant for StudyMode AI. Your STRICT purpose is to assist with educational, academic, and study-related topics ONLY.\n"
+        "Always format your responses beautifully using Markdown. Use clear headings (###), bullet points, and bold text to structure your answers logically and make them easy to read. Avoid giant walls of text."
+    )
 
     if rag_context:
         # Prepend a system message with context if we found some

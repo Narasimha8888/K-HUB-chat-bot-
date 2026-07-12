@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, Loader2, GraduationCap, Square } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import ChatBubble from '../components/ChatBubble';
 import VoiceInput from '../components/VoiceInput';
 import { streamChatResponse, getChatSessionMessages } from '../services/api';
@@ -11,6 +11,7 @@ const AIChat = () => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const searchParams = new URLSearchParams(location.search);
   const initialSessionId = searchParams.get('session_id') ? parseInt(searchParams.get('session_id')) : null;
   const [sessionId, setSessionId] = useState(initialSessionId);
@@ -79,6 +80,7 @@ const AIChat = () => {
       (newSessionId) => {
         if (!sessionId && newSessionId) {
           setSessionId(newSessionId);
+          navigate(`/chat?session_id=${newSessionId}`, { replace: true });
         }
         setIsLoading(false);
       },
