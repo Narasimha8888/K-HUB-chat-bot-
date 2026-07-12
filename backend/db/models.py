@@ -50,6 +50,7 @@ class Quiz(Base):
     __tablename__ = "quizzes"
     id = Column(Integer, primary_key=True, index=True)
     topic = Column(String, index=True)
+    is_submitted = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     questions = relationship("Question", back_populates="quiz", cascade="all, delete-orphan")
@@ -61,6 +62,7 @@ class Question(Base):
     question_text = Column(Text)
     options = Column(Text) # JSON string of options
     correct_answer = Column(String)
+    user_answer = Column(String, nullable=True)
     explanation = Column(Text)
     
     quiz = relationship("Quiz", back_populates="questions")

@@ -19,7 +19,13 @@ async def generate_flashcards(request: FlashcardRequest, db: Session = Depends(g
     if not request.topic.strip():
         raise HTTPException(status_code=400, detail="Topic is required")
 
-    # 1. Query RAG context
+    # 1. Validation Layer
+    from services.validation_service import validate_educational_topic
+    is_educational = await validate_educational_topic(request.topic)
+    if not is_educational:
+        raise HTTPException(status_code=400, detail="Studymode AI only generates flashcards for educational topics. Please enter an education-related topic.")
+
+    # 2. Query RAG context
     context = rag_service.query_context(request.topic, n_results=3)
 
     # 2. Build prompt

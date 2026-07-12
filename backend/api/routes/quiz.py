@@ -23,7 +23,13 @@ async def generate_quiz(request: QuizRequest, db: Session = Depends(get_db)):
     if not request.topic.strip():
         raise HTTPException(status_code=400, detail="Topic is required")
 
-    # 1. Query RAG context
+    # 1. Validation Layer
+    from services.validation_service import validate_educational_topic
+    is_educational = await validate_educational_topic(request.topic)
+    if not is_educational:
+        raise HTTPException(status_code=400, detail="Studymode AI only generates quizzes for educational topics. Please enter an education-related topic.")
+
+    # 2. Query RAG context
     context = rag_service.query_context(request.topic, n_results=3)
 
     # 2. Build prompt
@@ -60,13 +66,30 @@ async def generate_quiz(request: QuizRequest, db: Session = Depends(get_db)):
             quiz_id=new_quiz.id,
             question_text=q.get("question", ""),
             options=json.dumps(q.get("options", [])),
-            correct_answer=q.get("correct_answer", ""),
+            correct_answer=q.get("answer", q.get("correct_answer", "")),
             explanation=q.get("explanation", "")
         )
         db.add(db_q)
     db.commit()
 
-    return {"id": new_quiz.id, "topic": new_quiz.topic, "questions": quiz_data.get("questions", [])}
+    # Re-fetch to get IDs
+    db.refresh(new_quiz)
+    questions = []
+    for q in new_quiz.questions:
+        try:
+            options = json.loads(q.options)
+        except:
+            options = []
+        questions.append({
+            "id": q.id,
+            "question": q.question_text,
+            "options": options,
+            "answer": q.correct_answer,
+            "explanation": q.explanation,
+            "user_answer": q.user_answer
+        })
+
+    return {"id": new_quiz.id, "topic": new_quiz.topic, "is_submitted": new_quiz.is_submitted, "questions": questions}
 
 @router.get("/{quiz_id}", tags=["Quiz"])
 def get_quiz(quiz_id: int, db: Session = Depends(get_db)):
@@ -81,10 +104,29 @@ def get_quiz(quiz_id: int, db: Session = Depends(get_db)):
         except:
             options = []
         questions.append({
+            "id": q.id,
             "question": q.question_text,
             "options": options,
-            "correct_answer": q.correct_answer,
-            "explanation": q.explanation
+            "answer": q.correct_answer,
+            "explanation": q.explanation,
+            "user_answer": q.user_answer
         })
         
-    return {"id": quiz.id, "topic": quiz.topic, "questions": questions}
+    return {"id": quiz.id, "topic": quiz.topic, "is_submitted": quiz.is_submitted, "questions": questions}
+
+class QuizSubmitRequest(BaseModel):
+    answers: dict # { question_id: "selected option" }
+
+@router.post("/{quiz_id}/submit", tags=["Quiz"])
+def submit_quiz(quiz_id: int, request: QuizSubmitRequest, db: Session = Depends(get_db)):
+    quiz = db.query(Quiz).filter(Quiz.id == quiz_id).first()
+    if not quiz:
+        raise HTTPException(status_code=404, detail="Quiz not found")
+        
+    for q in quiz.questions:
+        if str(q.id) in request.answers:
+            q.user_answer = request.answers[str(q.id)]
+    
+    quiz.is_submitted = 1
+    db.commit()
+    return {"status": "success"}

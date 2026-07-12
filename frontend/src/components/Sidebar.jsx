@@ -76,7 +76,7 @@ const Sidebar = ({ isSidebarOpen }) => {
       </nav>
 
       {/* Recents Section */}
-      <div className={`flex-1 overflow-y-auto mt-6 ${isSidebarOpen ? 'px-4' : 'px-2 flex flex-col items-center'}`}>
+      <div className={`flex-1 overflow-y-auto scrollbar-hide mt-6 ${isSidebarOpen ? 'px-4' : 'px-2 flex flex-col items-center'}`}>
         {isSidebarOpen && (
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 px-2">
             {t('sidebar.recents')}

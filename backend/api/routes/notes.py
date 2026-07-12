@@ -20,7 +20,18 @@ async def enhance_notes(request: NotesRequest, db: Session = Depends(get_db)):
     if not request.raw_text.strip():
         raise HTTPException(status_code=400, detail="Raw text is required")
 
-    # 1. Query RAG context using the raw text as the search query
+    # 1. Validation Layer
+    from services.validation_service import validate_educational_topic
+    is_educational = await validate_educational_topic(request.raw_text)
+    
+    if not is_educational:
+        refusal_msg = "Studymode AI only generates smart notes for educational topics. Please enter education-related notes."
+        async def refusal_generator():
+            yield f"data: {json.dumps({'message': {'content': refusal_msg}})}\n\n"
+            yield f"data: {json.dumps({'done': True, 'note_id': None})}\n\n"
+        return StreamingResponse(refusal_generator(), media_type="text/event-stream")
+
+    # 2. Query RAG context using the raw text as the search query
     context = rag_service.query_context(request.raw_text, n_results=3)
 
     # 2. Build prompt

@@ -17,7 +17,7 @@ Format:
     def build_flashcard_prompt(topic: str, context: str = "", num_cards: int = 5) -> str:
         prompt = f"Generate {num_cards} flashcards about the following topic: {topic}\n"
         if context:
-            prompt += f"\nUse this context to inform the flashcards:\n{context}\n"
+            prompt += f"\nIMPORTANT: Only use the following context if it is directly relevant to the topic '{topic}'. If it is unrelated, completely ignore the context and use your general knowledge:\n{context}\n"
         return prompt
 
     @staticmethod
@@ -46,7 +46,7 @@ Generate questions only for the selected quiz type. Never mix quiz types.
 
 # Quiz Generation Rules
 Generate questions only from educational content.
-If RAG context is available, use it as the primary source. Otherwise, use the knowledge of the local Ollama model.
+If RAG context is available AND relevant to the topic, use it as the primary source. If the RAG context is completely unrelated to the topic, IGNORE IT and use your general knowledge.
 Questions should be: Accurate, Educational, Clear, Grammatically correct, Non-repetitive, Appropriate for difficulty.
 
 # Output Requirements
@@ -75,7 +75,7 @@ Restrictions: Do NOT generate quizzes for Movies, Politics, Sports, Entertainmen
     def build_quiz_prompt(topic: str, quiz_type: str, difficulty: str, count: int, context: str = "") -> str:
         prompt = f"Topic: {topic}\nQuiz Type: {quiz_type}\nDifficulty: {difficulty}\nQuestions: {count}\n"
         if context:
-            prompt += f"\nRAG Context available:\n{context}\n"
+            prompt += f"\nIMPORTANT: Only use the following RAG Context if it is directly relevant to the topic '{topic}'. If it is unrelated, completely ignore it and use your general knowledge:\n{context}\n"
         return prompt
 
     @staticmethod
@@ -109,12 +109,12 @@ Rules:
 1. Do not deviate from the headings above. If a section doesn't apply, you may briefly note "Not applicable" or provide a related insightful comment.
 2. Expand on the user's rough thoughts to provide more depth, clarity, and context.
 3. Use bullet points and bold text within the sections to highlight key terms.
-4. If RAG Context is provided, seamlessly integrate facts from it into the notes.
+4. If RAG Context is provided, seamlessly integrate facts from it into the notes ONLY IF it is relevant to the topic. If it's completely irrelevant, ignore it.
 5. Do NOT include a greeting or conclusion. Just output the raw Markdown notes following the structure above."""
 
     @staticmethod
     def build_notes_prompt(raw_text: str, context: str = "") -> str:
         prompt = f"Rough Notes:\n{raw_text}\n\nPlease expand and format these notes."
         if context:
-            prompt += f"\n\nContext to include:\n{context}"
+            prompt += f"\n\nIMPORTANT: Only use the following Context if it is directly relevant to the rough notes. If it is unrelated, completely ignore it:\n{context}"
         return prompt

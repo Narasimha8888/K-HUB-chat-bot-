@@ -39,18 +39,8 @@ async def ai_chat(request: ChatRequest, db: Session = Depends(get_db)):
     client = OllamaClient()
 
     # --- STRICT VALIDATION LAYER ---
-    validation_prompt = (
-        f"Analyze the following user request and determine if it is strictly about an educational, academic, or study-related topic.\n"
-        f"Topics like cooking, recipes, movies, entertainment, sports, politics, and personal advice are NOT educational.\n"
-        f"User Request: \"{request.message}\"\n\n"
-        f"Reply with ONLY the word 'YES' if it is educational, or 'NO' if it is not."
-    )
-    
-    try:
-        validation_response = await client.generate(prompt=validation_prompt)
-        is_educational = "YES" in validation_response.upper()
-    except Exception:
-        is_educational = True # Fallback to true if validation fails
+    from services.validation_service import validate_educational_topic
+    is_educational = await validate_educational_topic(request.message)
 
     if not is_educational:
         refusal_msg = "I'm sorry for the confusion, but as an academic AI assistant, my primary role is to provide information and assistance related to studies and education. I don't specialize in non-educational topics like this."
@@ -65,7 +55,8 @@ async def ai_chat(request: ChatRequest, db: Session = Depends(get_db)):
 
     chat_system_prompt = (
         "You are an intelligent academic AI assistant for StudyMode AI. Your STRICT purpose is to assist with educational, academic, and study-related topics ONLY.\n"
-        "Always format your responses beautifully using Markdown. Use clear headings (###), bullet points, and bold text to structure your answers logically and make them easy to read. Avoid giant walls of text."
+        "Always format your responses beautifully using Markdown. Use clear headings (###), bullet points, and bold text to structure your answers logically and make them easy to read. Avoid giant walls of text.\n"
+        "CRITICAL: Be extremely direct. Do not use conversational fillers, greetings, or conclusions (e.g., do not say 'Here is an explanation of...' or 'Certainly!'). Just provide the focused, structured educational answer about the specific topic requested and absolutely nothing else."
     )
 
     if rag_context:

@@ -98,7 +98,8 @@ const SmartNotes = () => {
             onChange={(e) => setRawText(e.target.value)}
             placeholder="e.g., mitochondria power house, ATP production, outer inner membrane..."
             rows={5}
-            className="w-full bg-input border-2 border-gray-700 text-white placeholder-gray-600 rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:border-primary transition-colors resize-none"
+            disabled={isGenerating || !!notes}
+            className="w-full bg-input border-2 border-gray-700 text-white placeholder-gray-600 rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:border-primary transition-colors resize-none disabled:opacity-50"
           />
           <div className="absolute right-2 top-2 flex items-start">
             <VoiceInput value={rawText} onChange={setRawText} />

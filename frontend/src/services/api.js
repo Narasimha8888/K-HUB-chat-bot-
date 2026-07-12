@@ -118,6 +118,16 @@ export const generateQuiz = async (options, abortSignal = null) => {
 };
 
 /**
+ * Submits the user's quiz answers to the backend
+ * @param {number} quizId - The ID of the quiz
+ * @param {Object} answers - { question_id: "selected option" }
+ */
+export const submitQuiz = async (quizId, answers) => {
+  const response = await apiClient.post(`/quiz/${quizId}/submit`, { answers });
+  return response.data;
+};
+
+/**
  * Streams enhanced smart notes based on raw user text
  * @param {string} rawText - The rough notes to enhance
  * @param {Function} onChunk - Callback for each piece of generated text

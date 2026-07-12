@@ -94,7 +94,8 @@ const FlashcardGenerator = () => {
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
             placeholder={t('flashcards.inputPlaceholder')}
-            className="w-full bg-input border border-gray-800 text-main placeholder-gray-500 rounded-full py-4 pl-6 pr-14 focus:outline-none focus:border-primary transition-all shadow-sm shadow-primary/5"
+            disabled={isGenerating || flashcards.length > 0}
+            className="w-full bg-input border border-gray-800 text-main placeholder-gray-500 rounded-full py-4 pl-6 pr-14 focus:outline-none focus:border-primary transition-all shadow-sm shadow-primary/5 disabled:opacity-50"
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
             <VoiceInput value={topic} onChange={setTopic} />
@@ -114,7 +115,8 @@ const FlashcardGenerator = () => {
               max="10"
               value={numCards}
               onChange={(e) => setNumCards(e.target.value)}
-              className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-primary"
+              disabled={isGenerating || flashcards.length > 0}
+              className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-primary disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 background: `linear-gradient(to right, var(--primary) ${((numCards - 3) / (10 - 3)) * 100}%, var(--text-main) ${((numCards - 3) / (10 - 3)) * 100}%)`
               }}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { HelpCircle, Loader2, CheckCircle2, XCircle, Square } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
-import { generateQuiz, getQuiz } from '../services/api';
+import { generateQuiz, getQuiz, submitQuiz } from '../services/api';
 import VoiceInput from '../components/VoiceInput';
 
 const QuizGenerator = () => {
@@ -15,6 +15,10 @@ const QuizGenerator = () => {
   const [error, setError] = useState('');
   const location = useLocation();
   const abortControllerRef = useRef(null);
+  
+  // Interactive quiz state
+  const [userAnswers, setUserAnswers] = useState({});
+  const [showResults, setShowResults] = useState(false);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -24,6 +28,18 @@ const QuizGenerator = () => {
         if (data) {
           setTopic(data.topic || '');
           setQuizData(data);
+          
+          // Load user answers from history if they exist
+          const savedAnswers = {};
+          if (data.questions) {
+             data.questions.forEach(q => {
+               if (q.user_answer !== undefined && q.user_answer !== null) {
+                 savedAnswers[q.id] = q.user_answer;
+               }
+             });
+          }
+          setUserAnswers(savedAnswers);
+          setShowResults(data.is_submitted === 1);
         }
       }).catch(console.error);
     } else {
@@ -33,10 +49,6 @@ const QuizGenerator = () => {
       setShowResults(false);
     }
   }, [location.search]);
-  
-  // Interactive quiz state
-  const [userAnswers, setUserAnswers] = useState({});
-  const [showResults, setShowResults] = useState(false);
 
   const handleCancel = () => {
     if (abortControllerRef.current) {
@@ -92,8 +104,15 @@ const QuizGenerator = () => {
     setUserAnswers(prev => ({ ...prev, [questionId]: selectedAnswer }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setShowResults(true);
+    if (quizData && quizData.id) {
+      try {
+        await submitQuiz(quizData.id, userAnswers);
+      } catch(err) {
+        console.error("Failed to save quiz answers to history:", err);
+      }
+    }
   };
 
   const renderQuestion = (q) => {
@@ -193,7 +212,8 @@ const QuizGenerator = () => {
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
                 placeholder="Enter a topic (e.g. World War II, Photosynthesis)"
-                className="w-full bg-input border-2 border-gray-700 text-white placeholder-gray-600 rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:border-primary transition-colors"
+                disabled={isGenerating || !!quizData}
+                className="w-full bg-input border-2 border-gray-700 text-white placeholder-gray-600 rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:border-primary transition-colors disabled:opacity-50"
               />
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
                 <VoiceInput value={topic} onChange={setTopic} />
@@ -205,7 +225,8 @@ const QuizGenerator = () => {
             <select
               value={quizType}
               onChange={(e) => setQuizType(e.target.value)}
-              className="w-full bg-input border-2 border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:border-primary appearance-none"
+              disabled={isGenerating || !!quizData}
+              className="w-full bg-input border-2 border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:border-primary appearance-none disabled:opacity-50"
             >
               <option value="Multiple Choice Questions (MCQ)">Multiple Choice</option>
               <option value="True / False">True / False</option>
@@ -217,7 +238,8 @@ const QuizGenerator = () => {
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value)}
-              className="w-full bg-input border-2 border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:border-primary appearance-none"
+              disabled={isGenerating || !!quizData}
+              className="w-full bg-input border-2 border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:border-primary appearance-none disabled:opacity-50"
             >
               <option value="Easy">Easy</option>
               <option value="Medium">Medium</option>
@@ -230,7 +252,8 @@ const QuizGenerator = () => {
             <select
               value={totalQuestions}
               onChange={(e) => setTotalQuestions(e.target.value)}
-              className="w-full bg-input border-2 border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:border-primary appearance-none"
+              disabled={isGenerating || !!quizData}
+              className="w-full bg-input border-2 border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:border-primary appearance-none disabled:opacity-50"
             >
               <option value={3}>3 Questions</option>
               <option value={5}>5 Questions</option>
