@@ -11,7 +11,7 @@ const MainLayout = () => {
       <Sidebar isSidebarOpen={isSidebarOpen} />
       <div className="flex-1 flex flex-col h-full w-full overflow-hidden">
         <Navbar toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-        <main className="flex-1 overflow-y-auto w-full relative">
+        <main className="flex-1 overflow-y-auto scrollbar-hide w-full relative">
           <Outlet />
         </main>
       </div>

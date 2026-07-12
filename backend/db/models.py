@@ -9,7 +9,7 @@ class Document(Base):
     filename = Column(String, index=True)
     file_path = Column(String)
     uploaded_at = Column(DateTime(timezone=True), server_default=func.now())
-    # Optional metadata or status
+    summary = Column(Text, nullable=True)
 
 class ChatSession(Base):
     __tablename__ = "chat_sessions"

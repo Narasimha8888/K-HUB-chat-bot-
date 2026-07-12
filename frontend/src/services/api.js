@@ -253,3 +253,19 @@ export const updateFlashcardFeedback = async (cardId, feedbackData) => {
   const response = await apiClient.put(`/flashcards/card/${cardId}/feedback`, feedbackData);
   return response.data;
 };
+
+/**
+ * Fetch all uploaded documents
+ */
+export const getDocuments = async () => {
+  const response = await apiClient.get('/pdf/');
+  return response.data;
+};
+
+/**
+ * Delete an uploaded document
+ */
+export const deleteDocument = async (docId) => {
+  const response = await apiClient.delete(`/pdf/${docId}`);
+  return response.data;
+};

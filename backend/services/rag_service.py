@@ -28,16 +28,33 @@ class RAGService:
             metadatas=metadatas
         )
 
-    def query_context(self, query: str, n_results: int = 3) -> str:
+    def delete_document(self, doc_id: str):
+        """Deletes all chunks associated with a document ID from ChromaDB."""
+        self.collection.delete(where={"doc_id": doc_id})
+
+    def query_context(self, query: str, n_results: int = 3, distance_threshold: float = 1.2) -> str:
         """Queries the vector database for the most relevant chunks."""
+        # Check if the collection is empty before querying
+        if self.collection.count() == 0:
+            return ""
+            
         results = self.collection.query(
             query_texts=[query],
-            n_results=n_results
+            n_results=min(n_results, self.collection.count())
         )
         
         if not results["documents"] or not results["documents"][0]:
             return ""
             
+        # Filter chunks by distance threshold (closer to 0 is better, > 1.2 is usually unrelated)
+        context_chunks = []
+        for i, doc in enumerate(results["documents"][0]):
+            distance = results["distances"][0][i]
+            if distance < distance_threshold:
+                context_chunks.append(doc)
+                
+        if not context_chunks:
+            return ""
+            
         # Combine the top chunks into a single context string
-        context_chunks = results["documents"][0]
         return "\n\n".join(context_chunks)

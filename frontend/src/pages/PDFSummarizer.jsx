@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FileText, Upload, Trash2, Loader2, Square } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { uploadPDF } from '../services/api';
+import { FileText, Upload, Trash2, Loader2, Square, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { uploadPDF, getDocuments, deleteDocument } from '../services/api';
 
 const PDFSummarizer = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [savedItems, setSavedItems] = useState([]);
   const [error, setError] = useState('');
-  const [statusMessage, setStatusMessage] = useState('');
+  const [expandedId, setExpandedId] = useState(null);
   const abortControllerRef = useRef(null);
+  const navigate = useNavigate();
 
   const handleCancel = () => {
     if (abortControllerRef.current) {
@@ -17,6 +19,12 @@ const PDFSummarizer = () => {
       setIsUploading(false);
     }
   };
+
+  useEffect(() => {
+    getDocuments().then(data => {
+      setSavedItems(data || []);
+    }).catch(console.error);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -35,7 +43,6 @@ const PDFSummarizer = () => {
 
     setIsUploading(true);
     setError('');
-    setStatusMessage('');
 
     abortControllerRef.current = new AbortController();
 
@@ -43,15 +50,18 @@ const PDFSummarizer = () => {
       const response = await uploadPDF(file, abortControllerRef.current.signal);
 
       setSavedItems((prev) => [
+        { id: response.doc_id, filename: response.filename, summary: response.summary },
         ...prev,
-        { id: Date.now(), name: response.filename, summary: response.summary },
       ]);
-      setStatusMessage("Document embedded in RAG database successfully.");
+      
+      // Navigate to trigger history update in sidebar
+      navigate(`/pdf-summarizer?id=${response.doc_id}`, { replace: true });
     } catch (err) {
       if (err.name === 'CanceledError' || err.message?.includes('aborted') || err.name === 'AbortError') {
         console.log('PDF upload aborted.');
       } else {
-        setError('Only PDF files can be uploaded or the backend failed to process it.');
+        const errorData = err.response?.data?.error?.message || err.response?.data?.detail;
+        setError(errorData || 'Only PDF files can be uploaded or the backend failed to process it.');
       }
     } finally {
       setIsUploading(false);
@@ -59,8 +69,14 @@ const PDFSummarizer = () => {
     }
   };
 
-  const deleteItem = (id) => {
-    setSavedItems((prev) => prev.filter((item) => item.id !== id));
+  const deleteItem = async (id) => {
+    try {
+      await deleteDocument(id);
+      setSavedItems((prev) => prev.filter((item) => item.id !== id));
+    } catch (err) {
+      console.error('Failed to delete document', err);
+      setError('Failed to delete document');
+    }
   };
 
   return (
@@ -103,30 +119,66 @@ const PDFSummarizer = () => {
       )}
 
       {error && <p className="text-sm text-red-400 mb-4">{error}</p>}
-      {statusMessage && <p className="text-sm text-primary mb-4">{statusMessage}</p>}
 
       {savedItems.length > 0 && (
         <div className="mt-12">
-          <h2 className="text-sm font-semibold text-gray-400 mb-4">Saved items</h2>
+          <h2 className="text-sm font-semibold text-gray-400 mb-4">Uploaded Documents</h2>
           <div className="space-y-2">
             {savedItems.map((item) => (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 key={item.id}
-                className="bg-gray-800/30 border border-gray-800/50 rounded-xl p-4 flex items-center justify-between group hover:bg-gray-800/50 transition-colors"
+                className="bg-gray-800/30 border border-gray-800/50 rounded-xl overflow-hidden group transition-colors hover:bg-gray-800/40"
               >
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-200">{item.name}</span>
-                  {item.summary && <span className="text-xs text-gray-500">{item.summary}</span>}
-                </div>
-                <button
-                  onClick={() => deleteItem(item.id)}
-                  className="text-gray-500 text-sm hover:text-red-400 transition-all flex items-center gap-2"
+                <div 
+                  className="p-4 flex items-center justify-between cursor-pointer"
+                  onClick={() => setExpandedId(expandedId === item.id ? null : item.id)}
                 >
-                  <Trash2 className="w-4 h-4" />
-                  Delete
-                </button>
+                  <div className="flex items-center gap-3">
+                    <FileText className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium text-gray-200">{item.filename || item.name}</span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteItem(item.id);
+                      }}
+                      className="text-gray-500 hover:text-red-400 transition-colors flex items-center gap-2 p-1 rounded-md hover:bg-gray-700/50"
+                      title="Delete document"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    {item.summary && (
+                      <motion.div
+                        animate={{ rotate: expandedId === item.id ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ChevronDown className="w-4 h-4 text-gray-400" />
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+
+                <AnimatePresence>
+                  {expandedId === item.id && item.summary && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    >
+                      <div className="px-4 pb-4 pt-1">
+                        <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/50">
+                          <p className="text-sm text-gray-300 leading-relaxed">
+                            {item.summary}
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             ))}
           </div>

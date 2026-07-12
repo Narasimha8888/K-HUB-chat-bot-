@@ -4,13 +4,11 @@ from typing import Optional
 from sqlalchemy.orm import Session
 import json
 from services.ollama_client import OllamaClient
-from services.rag_service import RAGService
 from services.prompt_engine import PromptEngine
 from db.session import get_db
 from db.models import Quiz, Question
 
 router = APIRouter()
-rag_service = RAGService()
 
 class QuizRequest(BaseModel):
     topic: str
@@ -34,16 +32,13 @@ async def generate_quiz(request: QuizRequest, db: Session = Depends(get_db)):
         db.refresh(new_quiz)
         raise HTTPException(status_code=400, detail={"message": refusal_msg, "id": new_quiz.id})
 
-    # 2. Query RAG context
-    context = rag_service.query_context(request.topic, n_results=3)
-
     # 2. Build prompt
     prompt = PromptEngine.build_quiz_prompt(
         topic=request.topic,
         quiz_type=request.quiz_type,
         difficulty=request.difficulty,
         count=request.total_questions,
-        context=context
+        context=""
     )
     system = PromptEngine.QUIZ_SYSTEM_PROMPT
 

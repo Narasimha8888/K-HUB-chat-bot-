@@ -15,15 +15,18 @@ async def validate_educational_topic(topic: str) -> bool:
 """
 
     validation_prompt = (
-        f"Analyze the following user request and determine if it falls under any of these strictly educational domains:\n{allowed_domains}\n\n"
-        f"Topics like cooking, recipes, movies, entertainment, sports, politics, celebrities, shopping, and personal advice are NOT educational and must be rejected.\n"
+        f"You are a strict validation AI for an educational app. Your ONLY job is to determine if a user's request is related to an academic, scientific, or educational topic.\n\n"
+        f"Educational topics include: Science, Mathematics, Engineering, Programming, AI, History, Geography, Literature, Languages, Economics, Medicine, etc.\n"
+        f"NON-educational topics include: Cooking, Movies, Sports, Politics, Celebrities, Entertainment, Shopping, Personal Advice, etc.\n\n"
+        f"IMPORTANT: Users often type conversational prefixes like 'create about', 'write a note on', or 'generate flashcards for'. Ignore these prefixes and focus ONLY on the core subject matter. If the core subject matter is educational (e.g., 'Artificial intelligence'), it is VALID.\n\n"
         f"User Request: \"{topic}\"\n\n"
-        f"Reply with ONLY the word 'YES' if it matches the educational domains, or 'NO' if it does not."
+        f"Is the core subject matter of the user's request an educational topic? Reply with ONLY the word YES or NO."
     )
     
     client = OllamaClient()
     try:
         validation_response = await client.generate(prompt=validation_prompt)
+        print("VALIDATION RESPONSE:", validation_response)
         return "YES" in validation_response.upper()
     except Exception:
         return True # Fallback to true if validation fails

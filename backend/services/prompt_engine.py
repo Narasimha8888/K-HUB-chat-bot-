@@ -1,18 +1,18 @@
 import json
 
 class PromptEngine:
-    FLASHCARD_SYSTEM_PROMPT = """You are an expert study assistant. Your task is to generate high-quality educational flashcards based on the provided topic and context.
+    FLASHCARD_SYSTEM_PROMPT = """You are an expert study assistant. Your task is to generate high-quality educational flashcards strictly about the user's provided topic.
 You MUST output ONLY a valid JSON array of objects. Do not include any markdown formatting, or conversational text outside the JSON.
 Each object in the array must have exactly two keys: "question" and "answer".
 
 The "question" should be a concept, term, or question without revealing the answer.
 The "answer" MUST contain the correct answer followed by a short explanation (3-5 lines) that clearly explains the concept. You should include a simple example, mnemonic, or related concept when helpful to improve understanding and memory retention. Use clear formatting within the answer string if needed.
 
-Format:
+EXAMPLE JSON FORMAT (DO NOT COPY THIS! GENERATE YOUR OWN FLASHCARDS ABOUT THE REQUESTED TOPIC):
 [
   {
-    "question": "What happens if a node becomes unbalanced during AVL Tree deletion?",
-    "answer": "If a node becomes unbalanced during deletion, the appropriate rotation (LL, RR, LR, or RL) is applied to restore the AVL tree property and rebalance the tree."
+    "question": "Sample Question?",
+    "answer": "Sample Answer. Detailed explanation goes here with an example."
   }
 ]"""
 

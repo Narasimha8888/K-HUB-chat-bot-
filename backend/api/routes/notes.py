@@ -4,13 +4,11 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 import json
 from services.ollama_client import OllamaClient
-from services.rag_service import RAGService
 from services.prompt_engine import PromptEngine
 from db.session import get_db
 from db.models import SmartNote
 
 router = APIRouter()
-rag_service = RAGService()
 
 class NotesRequest(BaseModel):
     raw_text: str
@@ -36,11 +34,8 @@ async def enhance_notes(request: NotesRequest, db: Session = Depends(get_db)):
             yield f"data: {json.dumps({'error': refusal_msg, 'note_id': new_note.id})}\n\n"
         return StreamingResponse(refusal_generator(), media_type="text/event-stream")
 
-    # 2. Query RAG context using the raw text as the search query
-    context = rag_service.query_context(request.raw_text, n_results=3)
-
     # 2. Build prompt
-    prompt = PromptEngine.build_notes_prompt(request.raw_text, context)
+    prompt = PromptEngine.build_notes_prompt(request.raw_text, "")
     system = PromptEngine.NOTES_SYSTEM_PROMPT
 
     # 3. Stream from Ollama

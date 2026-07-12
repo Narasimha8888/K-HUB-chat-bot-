@@ -2,13 +2,11 @@ from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from services.ollama_client import OllamaClient
-from services.rag_service import RAGService
 from services.prompt_engine import PromptEngine
 from db.session import get_db
 from db.models import FlashcardSet, Flashcard
 
 router = APIRouter()
-rag_service = RAGService()
 
 class FlashcardRequest(BaseModel):
     topic: str
@@ -30,11 +28,8 @@ async def generate_flashcards(request: FlashcardRequest, db: Session = Depends(g
         db.refresh(new_set)
         raise HTTPException(status_code=400, detail={"message": refusal_msg, "id": new_set.id})
 
-    # 2. Query RAG context
-    context = rag_service.query_context(request.topic, n_results=3)
-
     # 2. Build prompt
-    prompt = PromptEngine.build_flashcard_prompt(request.topic, context, request.num_cards)
+    prompt = PromptEngine.build_flashcard_prompt(request.topic, "", request.num_cards)
     system = PromptEngine.FLASHCARD_SYSTEM_PROMPT
 
     # 3. Generate using Ollama
