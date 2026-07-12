@@ -35,7 +35,7 @@ StudyMode AI is a powerful, privacy-first, local AI-powered academic assistant d
 1. **Node.js** (v18+ recommended)
 2. **Python** (v3.9+ recommended)
 3. **Ollama**: You must have [Ollama](https://ollama.com/) installed and running locally.
-   - Pull your preferred model (e.g., `ollama run llama3` or `ollama run mistral`). Ensure the backend `OllamaClient` points to the correct model name.
+   - Pull your preferred model (e.g., `ollama run qwen2.5:3b`). Ensure the backend `OllamaClient` points to the correct model name.
 
 ### Installation
 
@@ -116,7 +116,7 @@ graph TD
 
     subgraph AI["AI Engine"]
         Ollama["Ollama API"]
-        Llama["Llama3.1:8b Model"]
+        Qwen["Qwen2.5:3b Model"]
     end
 
     UI <-->|HTTP/REST| API
@@ -132,7 +132,7 @@ graph TD
     RAG --> Prompt
     
     Prompt <--> Ollama
-    Ollama <--> Llama
+    Ollama <--> Qwen
 ```
 
 ## License 📄
