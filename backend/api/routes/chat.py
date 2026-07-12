@@ -35,10 +35,14 @@ async def ai_chat(request: ChatRequest, db: Session = Depends(get_db)):
     rag = RAGService()
     rag_context = rag.query_context(request.message)
 
+    chat_system_prompt = "You are an intelligent academic AI assistant. Always format your responses beautifully using Markdown. Use clear headings (###), bullet points, and bold text to structure your answers logically and make them easy to read. Avoid giant walls of text."
+
     if rag_context:
         # Prepend a system message with context if we found some
-        system_prompt = f"Use the following study materials to answer the user's question. If the answer is not in the context, use your general knowledge.\n\nContext:\n{rag_context}"
+        system_prompt = f"{chat_system_prompt}\n\nUse the following study materials to answer the user's question. If the answer is not in the context, use your general knowledge.\n\nContext:\n{rag_context}"
         messages.insert(0, {"role": "system", "content": system_prompt})
+    else:
+        messages.insert(0, {"role": "system", "content": chat_system_prompt})
 
     # Initialize client
     client = OllamaClient()

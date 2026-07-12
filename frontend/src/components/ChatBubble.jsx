@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
 
 const ChatBubble = ({ message }) => {
   const isUser = message.role === 'user';
@@ -16,7 +17,9 @@ const ChatBubble = ({ message }) => {
         </div>
       ) : (
         <div className="text-gray-200 max-w-[85%] leading-relaxed pt-2">
-          {message.content}
+          <div className="prose prose-invert max-w-none prose-headings:text-primary prose-a:text-[#0bc284] prose-strong:text-white">
+            <ReactMarkdown>{message.content}</ReactMarkdown>
+          </div>
         </div>
       )}
     </motion.div>
