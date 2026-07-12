@@ -243,3 +243,13 @@ export const getNote = async (noteId) => {
   const response = await apiClient.get(`/notes/${noteId}`);
   return response.data;
 };
+
+/**
+ * Update flashcard feedback status and bookmark
+ * @param {number} cardId 
+ * @param {Object} feedbackData - { status: 'Easy', is_bookmarked: true }
+ */
+export const updateFlashcardFeedback = async (cardId, feedbackData) => {
+  const response = await apiClient.put(`/flashcards/card/${cardId}/feedback`, feedbackData);
+  return response.data;
+};

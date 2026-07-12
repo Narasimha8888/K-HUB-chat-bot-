@@ -74,5 +74,23 @@ def get_flashcard_set(set_id: int, db: Session = Depends(get_db)):
     if not fc_set:
         raise HTTPException(status_code=404, detail="Flashcard set not found")
     
-    cards = [{"question": c.front, "answer": c.back} for c in fc_set.cards]
+    cards = [{"id": c.id, "question": c.front, "answer": c.back, "status": c.status, "is_bookmarked": bool(c.is_bookmarked)} for c in fc_set.cards]
     return {"id": fc_set.id, "topic": fc_set.topic, "cards": cards, "error": fc_set.error}
+
+class FeedbackRequest(BaseModel):
+    status: str = None
+    is_bookmarked: bool = None
+
+@router.put("/card/{card_id}/feedback", tags=["Flashcards"])
+def update_flashcard_feedback(card_id: int, request: FeedbackRequest, db: Session = Depends(get_db)):
+    card = db.query(Flashcard).filter(Flashcard.id == card_id).first()
+    if not card:
+        raise HTTPException(status_code=404, detail="Flashcard not found")
+    
+    if request.status is not None:
+        card.status = request.status
+    if request.is_bookmarked is not None:
+        card.is_bookmarked = 1 if request.is_bookmarked else 0
+        
+    db.commit()
+    return {"success": True, "status": card.status, "is_bookmarked": bool(card.is_bookmarked)}
