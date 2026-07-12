@@ -1,0 +1,46 @@
+{
+  "sidebar": {
+    "studyMode": "StudyMode",
+    "newChat": "New chat",
+    "aiChat": "AI Chat",
+    "pdfSummarizer": "PDF Summarizer",
+    "flashCards": "Flash Cards",
+    "quiz": "Quiz",
+    "smartNotes": "Smart Notes",
+    "recents": "Recents",
+    "version": "Education-only AI • v1"
+  },
+  "navbar": {
+    "profile": "Profile",
+    "guestLearner": "Guest learner",
+    "language": "Language",
+    "english": "English",
+    "telugu": "తెలుగు (Telugu)",
+    "hindi": "हिन्दी (Hindi)"
+  },
+  "dashboard": {
+    "title": "Learn smarter with",
+    "subtitle": "Ask any academic question. StudyMode only answers education topics.",
+    "newChat": "New chat",
+    "studyTools": "Study Tools",
+    "pdfDesc": "Drop a PDF, get a structured summary.",
+    "flashCardsDesc": "Turn any topic into study cards.",
+    "quizDesc": "Test yourself with MCQs + explanations.",
+    "smartNotesDesc": "Generate structured revision notes."
+  },
+  "flashcards": {
+    "title": "Flash Cards",
+    "subtitle": "Generate study flashcards on any academic topic.",
+    "inputPlaceholder": "Enter a topic or question (education only)...",
+    "numCards": "Number of cards",
+    "generate": "Generate",
+    "error": "Unable to generate flashcards right now. Check backend connection."
+  },
+  "chat": {
+    "error": "The study assistant is unavailable right now. Please try again shortly.",
+    "greeting": "What are we studying today?",
+    "subtitle": "Ask any academic question. StudyMode only answers\neducation topics.",
+    "thinking": "Thinking...",
+    "inputPlaceholder": "Ask anything about your studies..."
+  }
+}
