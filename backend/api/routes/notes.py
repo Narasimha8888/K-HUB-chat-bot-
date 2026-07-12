@@ -26,9 +26,14 @@ async def enhance_notes(request: NotesRequest, db: Session = Depends(get_db)):
     
     if not is_educational:
         refusal_msg = "Studymode AI only generates smart notes for educational topics. Please enter education-related notes."
+        topic = request.raw_text[:50] + "..." if len(request.raw_text) > 50 else request.raw_text
+        new_note = SmartNote(topic=topic, content="", error=refusal_msg)
+        db.add(new_note)
+        db.commit()
+        db.refresh(new_note)
+        
         async def refusal_generator():
-            yield f"data: {json.dumps({'message': {'content': refusal_msg}})}\n\n"
-            yield f"data: {json.dumps({'done': True, 'note_id': None})}\n\n"
+            yield f"data: {json.dumps({'error': refusal_msg, 'note_id': new_note.id})}\n\n"
         return StreamingResponse(refusal_generator(), media_type="text/event-stream")
 
     # 2. Query RAG context using the raw text as the search query
@@ -79,4 +84,4 @@ def get_note(note_id: int, db: Session = Depends(get_db)):
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
     
-    return {"id": note.id, "topic": note.topic, "content": note.content}
+    return {"id": note.id, "topic": note.topic, "content": note.content, "error": note.error}

@@ -168,15 +168,18 @@ export const streamNotesResponse = async (rawText, onChunk, onDone, onError, abo
             try {
               const data = JSON.parse(dataStr);
               if (data.error) {
-                throw new Error(data.error);
+                const streamErr = new Error(data.error);
+                streamErr.noteId = data.note_id;
+                throw streamErr;
               }
               if (data.message && data.message.content) {
                 onChunk(data.message.content);
               }
               if (data.done) {
-                onDone();
+                onDone(data.note_id);
               }
             } catch (e) {
+              if (e.noteId !== undefined) throw e; // Propagate the streamErr
               console.error('Error parsing JSON chunk', e);
             }
           }
@@ -189,7 +192,7 @@ export const streamNotesResponse = async (rawText, onChunk, onDone, onError, abo
     }
 
   } catch (err) {
-    onError(err.message);
+    onError(err.message, err.noteId);
   }
 };
 

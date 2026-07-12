@@ -25,7 +25,14 @@ Format:
         try:
             # Strip markdown if model mistakenly added it
             cleaned = response_text.replace("```json", "").replace("```", "").strip()
-            return json.loads(cleaned)
+            data = json.loads(cleaned)
+            if isinstance(data, dict):
+                # If model wrapped it in an object
+                for key in data.keys():
+                    if isinstance(data[key], list):
+                        return data[key]
+                return [data] # fallback
+            return data
         except json.JSONDecodeError:
             return []
 
@@ -82,7 +89,10 @@ Restrictions: Do NOT generate quizzes for Movies, Politics, Sports, Entertainmen
     def parse_quiz(response_text: str) -> dict:
         try:
             cleaned = response_text.replace("```json", "").replace("```", "").strip()
-            return json.loads(cleaned)
+            data = json.loads(cleaned)
+            if isinstance(data, list):
+                return {"questions": data}
+            return data
         except json.JSONDecodeError:
             return {"error": "Failed to generate a valid quiz. Please try again."}
 

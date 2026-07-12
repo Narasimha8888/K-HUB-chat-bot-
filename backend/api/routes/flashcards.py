@@ -23,7 +23,12 @@ async def generate_flashcards(request: FlashcardRequest, db: Session = Depends(g
     from services.validation_service import validate_educational_topic
     is_educational = await validate_educational_topic(request.topic)
     if not is_educational:
-        raise HTTPException(status_code=400, detail="Studymode AI only generates flashcards for educational topics. Please enter an education-related topic.")
+        refusal_msg = "Studymode AI only generates flashcards for educational topics. Please enter an education-related topic."
+        new_set = FlashcardSet(topic=request.topic, error=refusal_msg)
+        db.add(new_set)
+        db.commit()
+        db.refresh(new_set)
+        raise HTTPException(status_code=400, detail={"message": refusal_msg, "id": new_set.id})
 
     # 2. Query RAG context
     context = rag_service.query_context(request.topic, n_results=3)
@@ -70,4 +75,4 @@ def get_flashcard_set(set_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Flashcard set not found")
     
     cards = [{"question": c.front, "answer": c.back} for c in fc_set.cards]
-    return {"id": fc_set.id, "topic": fc_set.topic, "cards": cards}
+    return {"id": fc_set.id, "topic": fc_set.topic, "cards": cards, "error": fc_set.error}

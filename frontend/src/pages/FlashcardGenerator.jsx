@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Layers, Loader2, Square } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { generateFlashcards, getFlashcardSet } from '../services/api';
 import { useLanguage } from '../contexts/LanguageContext';
 import VoiceInput from '../components/VoiceInput';
@@ -13,6 +13,7 @@ const FlashcardGenerator = () => {
   const [error, setError] = useState('');
   const { t } = useLanguage();
   const location = useLocation();
+  const navigate = useNavigate();
   const abortControllerRef = useRef(null);
 
   useEffect(() => {
@@ -22,8 +23,14 @@ const FlashcardGenerator = () => {
       getFlashcardSet(parseInt(id)).then(data => {
         if (data) {
           setTopic(data.topic || '');
-          setFlashcards(data.cards || []);
-          setNumCards(data.cards?.length || 3);
+          if (data.error) {
+            setError(data.error);
+            setFlashcards([]);
+          } else {
+            setError('');
+            setFlashcards(data.cards || []);
+            setNumCards(data.cards?.length || 3);
+          }
         }
       }).catch(console.error);
     } else {
@@ -62,11 +69,20 @@ const FlashcardGenerator = () => {
     try {
       const response = await generateFlashcards(topic.trim(), parseInt(numCards), abortControllerRef.current.signal);
       setFlashcards(response.cards || []);
+      if (response && response.id) {
+        navigate(`/flashcards?id=${response.id}`);
+      }
     } catch (err) {
       if (err.name === 'CanceledError' || err.message?.includes('aborted') || err.name === 'AbortError') {
         console.log('Flashcard generation aborted.');
       } else {
-        setError(t('flashcards.error'));
+        const errorData = err.response?.data?.error?.message;
+        if (errorData && typeof errorData === 'object') {
+          setError(errorData.message || t('flashcards.error'));
+          if (errorData.id) navigate(`/flashcards?id=${errorData.id}`);
+        } else {
+          setError(errorData || err.response?.data?.detail || t('flashcards.error'));
+        }
       }
     } finally {
       setIsGenerating(false);
@@ -94,7 +110,7 @@ const FlashcardGenerator = () => {
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
             placeholder={t('flashcards.inputPlaceholder')}
-            disabled={isGenerating || flashcards.length > 0}
+            disabled={isGenerating || flashcards.length > 0 || !!error}
             className="w-full bg-input border border-gray-800 text-main placeholder-gray-500 rounded-full py-4 pl-6 pr-14 focus:outline-none focus:border-primary transition-all shadow-sm shadow-primary/5 disabled:opacity-50"
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
@@ -115,7 +131,7 @@ const FlashcardGenerator = () => {
               max="10"
               value={numCards}
               onChange={(e) => setNumCards(e.target.value)}
-              disabled={isGenerating || flashcards.length > 0}
+              disabled={isGenerating || flashcards.length > 0 || !!error}
               className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-primary disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 background: `linear-gradient(to right, var(--primary) ${((numCards - 3) / (10 - 3)) * 100}%, var(--text-main) ${((numCards - 3) / (10 - 3)) * 100}%)`
@@ -148,19 +164,53 @@ const FlashcardGenerator = () => {
         </div>
       </div>
 
-      {/* Results Area */}
-      {error && <p className="text-sm text-red-400 mb-4">{error}</p>}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-xl mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-sm">{error}</p>
+          <button
+            onClick={() => {
+              navigate('/flashcards');
+              setFlashcards([]);
+              setTopic('');
+              setError('');
+            }}
+            className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors font-medium whitespace-nowrap shrink-0 text-sm"
+          >
+            Create New Flashcards
+          </button>
+        </div>
+      )}
 
       {flashcards.length > 0 && (
-        <div className="space-y-4">
-          {flashcards.map((card, index) => (
-            <div key={`${card.question}-${index}`} className="bg-card border border-gray-800 rounded-2xl p-5 hover:border-primary/30 transition-colors">
-              <p className="font-semibold text-main text-lg">{card.question}</p>
-              <div className="w-full h-px bg-gray-800 my-3"></div>
-              <p className="text-gray-400">{card.answer}</p>
+        <>
+          <div className="space-y-4">
+            {flashcards.map((card, index) => (
+              <div key={`${card.question}-${index}`} className="bg-card border border-gray-800 rounded-2xl p-5 hover:border-primary/30 transition-colors">
+                <p className="font-semibold text-main text-lg">{card.question}</p>
+                <div className="w-full h-px bg-gray-800 my-3"></div>
+                <p className="text-gray-400">{card.answer}</p>
+              </div>
+            ))}
+          </div>
+          
+          {!isGenerating && !error && (
+            <div className="bg-gray-800/80 border border-gray-700 p-8 rounded-2xl text-center mt-8">
+              <h3 className="text-2xl font-bold text-white mb-2">Flashcards Complete!</h3>
+              <p className="text-gray-400">Review your generated flashcards above.</p>
+              <button
+                onClick={() => {
+                  navigate('/flashcards');
+                  setFlashcards([]);
+                  setTopic('');
+                  setError('');
+                }}
+                className="mt-6 bg-gray-700 text-white px-8 py-3 rounded-xl hover:bg-gray-600 transition-colors font-medium"
+              >
+                Create New Flashcards
+              </button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );

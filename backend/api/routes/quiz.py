@@ -27,7 +27,12 @@ async def generate_quiz(request: QuizRequest, db: Session = Depends(get_db)):
     from services.validation_service import validate_educational_topic
     is_educational = await validate_educational_topic(request.topic)
     if not is_educational:
-        raise HTTPException(status_code=400, detail="Studymode AI only generates quizzes for educational topics. Please enter an education-related topic.")
+        refusal_msg = "Studymode AI only generates quizzes for educational topics. Please enter an education-related topic."
+        new_quiz = Quiz(topic=request.topic, error=refusal_msg)
+        db.add(new_quiz)
+        db.commit()
+        db.refresh(new_quiz)
+        raise HTTPException(status_code=400, detail={"message": refusal_msg, "id": new_quiz.id})
 
     # 2. Query RAG context
     context = rag_service.query_context(request.topic, n_results=3)
@@ -112,7 +117,7 @@ def get_quiz(quiz_id: int, db: Session = Depends(get_db)):
             "user_answer": q.user_answer
         })
         
-    return {"id": quiz.id, "topic": quiz.topic, "is_submitted": quiz.is_submitted, "questions": questions}
+    return {"id": quiz.id, "topic": quiz.topic, "is_submitted": quiz.is_submitted, "questions": questions, "error": quiz.error}
 
 class QuizSubmitRequest(BaseModel):
     answers: dict # { question_id: "selected option" }

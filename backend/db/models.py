@@ -33,6 +33,7 @@ class FlashcardSet(Base):
     __tablename__ = "flashcard_sets"
     id = Column(Integer, primary_key=True, index=True)
     topic = Column(String, index=True)
+    error = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     cards = relationship("Flashcard", back_populates="flashcard_set", cascade="all, delete-orphan")
@@ -43,6 +44,8 @@ class Flashcard(Base):
     set_id = Column(Integer, ForeignKey("flashcard_sets.id"))
     front = Column(Text)
     back = Column(Text)
+    status = Column(String, default="unreviewed")
+    is_bookmarked = Column(Integer, default=0) # using Integer for SQLite boolean (0/1)
     
     flashcard_set = relationship("FlashcardSet", back_populates="cards")
 
@@ -51,6 +54,7 @@ class Quiz(Base):
     id = Column(Integer, primary_key=True, index=True)
     topic = Column(String, index=True)
     is_submitted = Column(Integer, default=0)
+    error = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     questions = relationship("Question", back_populates="quiz", cascade="all, delete-orphan")
@@ -72,4 +76,5 @@ class SmartNote(Base):
     id = Column(Integer, primary_key=True, index=True)
     topic = Column(String, index=True)
     content = Column(Text)
+    error = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

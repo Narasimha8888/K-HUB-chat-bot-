@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BookOpen, Loader2, Square } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { streamNotesResponse, getNote } from '../services/api';
 import VoiceInput from '../components/VoiceInput';
 
@@ -11,6 +11,7 @@ const SmartNotes = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
   const location = useLocation();
+  const navigate = useNavigate();
   const abortControllerRef = useRef(null);
 
   useEffect(() => {
@@ -20,7 +21,13 @@ const SmartNotes = () => {
       getNote(parseInt(id)).then(data => {
         if (data) {
           setRawText(data.topic || '');
-          setNotes(data.content || '');
+          if (data.error) {
+            setError(data.error);
+            setNotes('');
+          } else {
+            setError('');
+            setNotes(data.content || '');
+          }
         }
       }).catch(console.error);
     } else {
@@ -61,11 +68,14 @@ const SmartNotes = () => {
       setNotes((prev) => prev + chunk);
     };
 
-    const onDone = () => {
+    const onDone = (noteId) => {
       setIsGenerating(false);
+      if (noteId) {
+        navigate(`/smart-notes?id=${noteId}`);
+      }
     };
 
-    const onError = (errMessage) => {
+    const onError = (errMessage, noteId) => {
       if (errMessage?.includes('aborted') || errMessage === 'AbortError') {
         console.log('Smart Notes generation aborted.');
         setIsGenerating(false);
@@ -73,6 +83,9 @@ const SmartNotes = () => {
       }
       setError(errMessage || 'Unable to generate notes right now.');
       setIsGenerating(false);
+      if (noteId) {
+        navigate(`/smart-notes?id=${noteId}`);
+      }
     };
 
     await streamNotesResponse(rawText.trim(), onChunk, onDone, onError, abortControllerRef.current.signal);
@@ -98,7 +111,7 @@ const SmartNotes = () => {
             onChange={(e) => setRawText(e.target.value)}
             placeholder="e.g., mitochondria power house, ATP production, outer inner membrane..."
             rows={5}
-            disabled={isGenerating || !!notes}
+            disabled={isGenerating || !!notes || !!error}
             className="w-full bg-input border-2 border-gray-700 text-white placeholder-gray-600 rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:border-primary transition-colors resize-none disabled:opacity-50"
           />
           <div className="absolute right-2 top-2 flex items-start">
@@ -127,24 +140,55 @@ const SmartNotes = () => {
       </div>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-xl mb-6">
-          {error}
+        <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-xl mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p>{error}</p>
+          <button
+            onClick={() => {
+              navigate('/smart-notes');
+              setNotes('');
+              setRawText('');
+              setError('');
+            }}
+            className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors font-medium whitespace-nowrap shrink-0"
+          >
+            Create New Notes
+          </button>
         </div>
       )}
 
       {notes && (
-        <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6 md:p-8">
-          <div className="prose prose-invert max-w-none prose-headings:text-primary prose-a:text-[#0bc284] prose-strong:text-white">
-            <ReactMarkdown>{notes}</ReactMarkdown>
+        <>
+          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6 md:p-8">
+            <div className="prose prose-invert max-w-none prose-headings:text-primary prose-a:text-[#0bc284] prose-strong:text-white">
+              <ReactMarkdown>{notes}</ReactMarkdown>
+            </div>
+            {isGenerating && (
+              <div className="flex items-center gap-2 text-primary mt-4 text-sm animate-pulse">
+                <div className="w-2 h-2 rounded-full bg-primary animate-bounce"></div>
+                <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+              </div>
+            )}
           </div>
-          {isGenerating && (
-            <div className="flex items-center gap-2 text-primary mt-4 text-sm animate-pulse">
-              <div className="w-2 h-2 rounded-full bg-primary animate-bounce"></div>
-              <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-              <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+
+          {!isGenerating && !error && (
+            <div className="bg-gray-800/80 border border-gray-700 p-8 rounded-2xl text-center mt-8">
+              <h3 className="text-2xl font-bold text-white mb-2">Smart Notes Complete!</h3>
+              <p className="text-gray-400">Review your structured notes above.</p>
+              <button
+                onClick={() => {
+                  navigate('/smart-notes');
+                  setNotes('');
+                  setRawText('');
+                  setError('');
+                }}
+                className="mt-6 bg-gray-700 text-white px-8 py-3 rounded-xl hover:bg-gray-600 transition-colors font-medium"
+              >
+                Create New Notes
+              </button>
             </div>
           )}
-        </div>
+        </>
       )}
     </div>
   );

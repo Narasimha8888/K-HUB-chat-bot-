@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { HelpCircle, Loader2, CheckCircle2, XCircle, Square } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { generateQuiz, getQuiz, submitQuiz } from '../services/api';
 import VoiceInput from '../components/VoiceInput';
 
@@ -14,6 +14,7 @@ const QuizGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
   const location = useLocation();
+  const navigate = useNavigate();
   const abortControllerRef = useRef(null);
   
   // Interactive quiz state
@@ -27,19 +28,27 @@ const QuizGenerator = () => {
       getQuiz(parseInt(id)).then(data => {
         if (data) {
           setTopic(data.topic || '');
-          setQuizData(data);
-          
-          // Load user answers from history if they exist
-          const savedAnswers = {};
-          if (data.questions) {
-             data.questions.forEach(q => {
-               if (q.user_answer !== undefined && q.user_answer !== null) {
-                 savedAnswers[q.id] = q.user_answer;
-               }
-             });
+          if (data.error) {
+            setError(data.error);
+            setQuizData(null);
+            setUserAnswers({});
+            setShowResults(false);
+          } else {
+            setError('');
+            setQuizData(data);
+            
+            // Load user answers from history if they exist
+            const savedAnswers = {};
+            if (data.questions) {
+               data.questions.forEach(q => {
+                 if (q.user_answer !== undefined && q.user_answer !== null) {
+                   savedAnswers[q.id] = q.user_answer;
+                 }
+               });
+            }
+            setUserAnswers(savedAnswers);
+            setShowResults(data.is_submitted === 1);
           }
-          setUserAnswers(savedAnswers);
-          setShowResults(data.is_submitted === 1);
         }
       }).catch(console.error);
     } else {
@@ -88,11 +97,20 @@ const QuizGenerator = () => {
         total_questions: parseInt(totalQuestions, 10)
       }, abortControllerRef.current.signal);
       setQuizData(response);
+      if (response && response.id) {
+        navigate(`/quiz?id=${response.id}`);
+      }
     } catch (err) {
       if (err.name === 'CanceledError' || err.message?.includes('aborted') || err.name === 'AbortError') {
         console.log('Quiz generation aborted.');
       } else {
-        setError(err.response?.data?.detail || 'Unable to create a quiz right now.');
+        const errorData = err.response?.data?.error?.message;
+        if (errorData && typeof errorData === 'object') {
+          setError(errorData.message || 'Unable to create a quiz right now.');
+          if (errorData.id) navigate(`/quiz?id=${errorData.id}`);
+        } else {
+          setError(errorData || err.response?.data?.detail || 'Unable to create a quiz right now.');
+        }
       }
     } finally {
       setIsGenerating(false);
@@ -118,7 +136,19 @@ const QuizGenerator = () => {
   const renderQuestion = (q) => {
     const isAnswered = userAnswers[q.id] !== undefined;
     const userAnswer = userAnswers[q.id];
-    const isCorrect = userAnswer === q.answer;
+    
+    // Function to flexibly check if an option matches the correct answer
+    const checkIsCorrect = (opt, correctAns) => {
+      if (opt === undefined || opt === null || correctAns === undefined || correctAns === null) return false;
+      const optStr = String(opt).trim();
+      const ansStr = String(correctAns).trim();
+      if (optStr === ansStr) return true;
+      if (optStr.toLowerCase() === ansStr.toLowerCase()) return true;
+      if (optStr.startsWith(ansStr + ')') || optStr.startsWith(ansStr + '.') || optStr.startsWith(ansStr + ' ')) return true;
+      return false;
+    };
+
+    const isCorrect = checkIsCorrect(userAnswer, q.answer);
 
     return (
       <div key={q.id} className="bg-gray-800/40 border border-gray-800 rounded-xl p-5">
@@ -135,7 +165,9 @@ const QuizGenerator = () => {
               }
               
               if (showResults) {
-                if (option === q.answer) {
+                const isThisOptionCorrect = checkIsCorrect(option, q.answer);
+
+                if (isThisOptionCorrect) {
                   optionClass = "border-[#0bc284] bg-[#0bc284]/20 text-white"; // Correct answer highlighted green
                 } else if (userAnswer === option && !isCorrect) {
                   optionClass = "border-red-500 bg-red-500/20 text-white"; // Wrong answer highlighted red
@@ -212,7 +244,7 @@ const QuizGenerator = () => {
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
                 placeholder="Enter a topic (e.g. World War II, Photosynthesis)"
-                disabled={isGenerating || !!quizData}
+                disabled={isGenerating || !!quizData || !!error}
                 className="w-full bg-input border-2 border-gray-700 text-white placeholder-gray-600 rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:border-primary transition-colors disabled:opacity-50"
               />
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
@@ -225,7 +257,7 @@ const QuizGenerator = () => {
             <select
               value={quizType}
               onChange={(e) => setQuizType(e.target.value)}
-              disabled={isGenerating || !!quizData}
+              disabled={isGenerating || !!quizData || !!error}
               className="w-full bg-input border-2 border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:border-primary appearance-none disabled:opacity-50"
             >
               <option value="Multiple Choice Questions (MCQ)">Multiple Choice</option>
@@ -238,7 +270,7 @@ const QuizGenerator = () => {
             <select
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value)}
-              disabled={isGenerating || !!quizData}
+              disabled={isGenerating || !!quizData || !!error}
               className="w-full bg-input border-2 border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:border-primary appearance-none disabled:opacity-50"
             >
               <option value="Easy">Easy</option>
@@ -252,7 +284,7 @@ const QuizGenerator = () => {
             <select
               value={totalQuestions}
               onChange={(e) => setTotalQuestions(e.target.value)}
-              disabled={isGenerating || !!quizData}
+              disabled={isGenerating || !!quizData || !!error}
               className="w-full bg-input border-2 border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:border-primary appearance-none disabled:opacity-50"
             >
               <option value={3}>3 Questions</option>
@@ -283,8 +315,21 @@ const QuizGenerator = () => {
       </div>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-xl mb-6">
-          {error}
+        <div className="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-xl mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p>{error}</p>
+          <button
+            onClick={() => {
+              navigate('/quiz');
+              setQuizData(null);
+              setUserAnswers({});
+              setShowResults(false);
+              setTopic('');
+              setError('');
+            }}
+            className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors font-medium whitespace-nowrap shrink-0"
+          >
+            Create New Quiz
+          </button>
         </div>
       )}
 
@@ -315,6 +360,7 @@ const QuizGenerator = () => {
               <p className="text-gray-400">Review your answers and explanations above.</p>
               <button
                 onClick={() => {
+                  navigate('/quiz');
                   setQuizData(null);
                   setUserAnswers({});
                   setShowResults(false);
