@@ -25,7 +25,7 @@ class OllamaClient:
         }
 
         async with httpx.AsyncClient() as client:
-            async with client.stream("POST", url, json=payload, timeout=60.0) as response:
+            async with client.stream("POST", url, json=payload, timeout=None) as response:
                 if response.status_code != 200:
                     yield f"data: {json.dumps({'error': f'Ollama error: {response.status_code}'})}\n\n"
                     return
