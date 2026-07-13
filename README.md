@@ -77,6 +77,11 @@ npm run dev
 ```
 
 ### Usage
+
+**Quick Start (Windows):**
+You can skip starting the servers manually! Just double-click the `start_studymode.bat` file in the root directory. It will automatically start both the FastAPI backend and the React frontend in separate windows, wait for them to load, and open the app in your default browser.
+
+**Manual Start:**
 Once both servers are running, open your browser and navigate to `http://localhost:5173`. 
 - Try asking a question in the **AI Chat**.
 - Generate a test in **Quiz Generator**.
@@ -92,48 +97,45 @@ Once both servers are running, open your browser and navigate to `http://localho
 
 StudyMode AI is a local-first, offline AI application. The system follows a client-server architecture with a dedicated AI and vector database layer.
 
-```mermaid
-graph TD
-    subgraph Frontend["React Frontend - Vite"]
-        UI["User Interface"]
-        State["State Management"]
-        Router["React Router"]
-    end
-
-    subgraph Backend["FastAPI Backend"]
-        API["API Routers"]
-        Valid["Validation Layer"]
-        Logic["Business Logic Services"]
-        RAG["RAG Engine"]
-        Prompt["Prompt Engine"]
-    end
-
-    subgraph Storage["Data Storage"]
-        SQL[("SQLite")]
-        Files["Uploads/Filesystem"]
-        Chroma[("ChromaDB")]
-    end
-
-    subgraph AI["AI Engine"]
-        Ollama["Ollama API"]
-        Qwen["Qwen2.5:3b Model"]
-    end
-
-    UI <-->|HTTP/REST| API
-    API --> Valid
-    Valid --> Logic
-    
-    Logic --> SQL
-    Logic --> Files
-    Logic --> RAG
-    Logic --> Prompt
-    
-    RAG --> Chroma
-    RAG --> Prompt
-    
-    Prompt <--> Ollama
-    Ollama <--> Qwen
+```
+                                       {{ React Frontend - Vite }}
+                               /-----------------------------------------\
+                               | ( User Interface ) ( State ) ( Router ) |
+                               \-----------------------------------------/
+                                                   ^
+                                                   | HTTP/REST
+                                                   v
+                                         {{ FastAPI Backend }}
+   {{ Data Storage }}           /-----------------------------------------\
+/-----------------------\       |           ( API Routers )               |
+|       ________        |       |                 |                       |
+|      (________)       |       |                 v                       |
+|      |        |       |       |         ( Validation Layer )            |
+|      | SQLite |       |       |                 |                       |
+|      (________)       |       |                 v                       |
+|           ^           |       |    ( Business Logic Services )          |
+|           |           |       |      ^          ^          ^            |
+|           +--------------------------+          |          |            |
+|                       |       |                 |          |            |
+| /-------------------\ |       |                 |          |            |
+| |Uploads/Filesystem |<--------------------------+          |            |
+| \-------------------/ |       |                            |            |
+|                       |       |                 /----------+----\       |
+|       ________        |       |                 v               v       |
+|      (________)       |       |           (RAG Engine)   (Prompt Engine)|
+|      |        |       |       |                 |               |       |
+|      | Chroma |<--------------------------------+               |       |
+|      (________)       |       |                                 |       |
+\-----------------------/       \-----------------------------------------/
+                                                                  |
+                                                                  v
+                                              {{ AI Engine }}
+                                /-----------------------------------------\
+                                |            ( Ollama API )               |
+                                |                    ^                    |
+                                |                    |                    |
+                                |                    v                    |
+                                |         ( Qwen2.5:3b Model  )           |
+                                \-----------------------------------------/
 ```
 
-## License 📄
-This project is open-source and available under the MIT License.
