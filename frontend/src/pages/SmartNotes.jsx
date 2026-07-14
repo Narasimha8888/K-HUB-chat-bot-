@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { BookOpen, Loader2, Square } from 'lucide-react';
+import { BookOpen, Loader2, Square, Download, Copy, Check } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { streamNotesResponse, getNote } from '../services/api';
@@ -10,6 +10,7 @@ const SmartNotes = () => {
   const [notes, setNotes] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const abortControllerRef = useRef(null);
@@ -42,6 +43,32 @@ const SmartNotes = () => {
       abortControllerRef.current = null;
       setIsGenerating(false);
     }
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(notes);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 700);
+  };
+
+  const handleDownload = () => {
+    const blob = new Blob([notes], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+
+    const match = notes.match(/^#\s+(.*)$/m);
+    let topicName = match ? match[1].trim() : '';
+    if (!topicName) {
+      topicName = rawText.trim() ? rawText.trim() : 'smart-notes';
+    }
+    topicName = topicName.replace(/[^a-zA-Z0-9 ]/g, "").substring(0, 50).trim() || 'smart-notes';
+
+    a.download = `${topicName}.doc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   useEffect(() => {
@@ -118,7 +145,7 @@ const SmartNotes = () => {
             <VoiceInput value={rawText} onChange={setRawText} />
           </div>
         </div>
-        
+
         {isGenerating ? (
           <button
             onClick={handleCancel}
@@ -158,8 +185,34 @@ const SmartNotes = () => {
 
       {notes && (
         <>
-          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6 md:p-8">
-            <div className="prose prose-invert max-w-none prose-headings:text-primary prose-a:text-[#0bc284] prose-strong:text-white">
+          <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6 md:p-8 relative">
+            {!isGenerating && (
+              <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+                <div className="relative">
+                  <button
+                    onClick={handleCopy}
+                    className="p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors flex items-center justify-center"
+                    title="Copy Notes"
+                  >
+                    {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                  {copied && (
+                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-800 border border-gray-700 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg flex items-center gap-1.5 whitespace-nowrap z-20">
+                      <Check className="w-3.5 h-3.5 text-green-500" />
+                      <span className="font-medium">Copied!</span>
+                    </div>
+                  )}
+                </div>
+                <button
+                  onClick={handleDownload}
+                  className="p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors flex items-center justify-center"
+                  title="Download as DOC"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+            <div className="prose prose-invert max-w-none prose-headings:text-primary prose-a:text-[#0bc284] prose-strong:text-white pt-10 sm:pt-0">
               <ReactMarkdown>{notes}</ReactMarkdown>
             </div>
             {isGenerating && (
