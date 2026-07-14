@@ -86,7 +86,7 @@ const PDFSummarizer = () => {
           <FileText className="w-6 h-6 text-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-white">PDF Summarizer</h1>
+          <h1 className="text-xl font-bold text-main">PDF Summarizer</h1>
           <p className="text-sm text-gray-400">Upload an academic PDF and get a structured summary.</p>
         </div>
       </div>
@@ -97,7 +97,7 @@ const PDFSummarizer = () => {
       >
         <input type="file" accept=".pdf" className="hidden" onChange={handleUpload} disabled={isUploading} />
         <Upload className="w-8 h-8 text-gray-400 mb-4" />
-        <p className="font-semibold text-white mb-1">Upload a PDF</p>
+        <p className="font-semibold text-main mb-1">Upload a PDF</p>
         <p className="text-xs text-gray-500">PDF only, max 15MB • Education content only</p>
       </label>
 
@@ -171,7 +171,7 @@ const PDFSummarizer = () => {
                     >
                       <div className="px-4 pb-4 pt-1">
                         <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700/50">
-                          <p className="text-sm text-gray-300 leading-relaxed">
+                          <p className="text-sm text-main leading-relaxed">
                             {item.summary}
                           </p>
                         </div>

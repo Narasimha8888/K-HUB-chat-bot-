@@ -63,3 +63,20 @@
 .rotate-y-180 {
   transform: rotateY(180deg);
 }
+
+/* Force Prose Colors for Light/Dark Mode */
+.prose {
+  color: var(--text-main) !important;
+}
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  color: var(--text-main) !important;
+}
+.prose strong, .prose b {
+  color: var(--text-main) !important;
+}
+.prose a {
+  color: var(--primary) !important;
+}
+.prose code {
+  color: var(--text-main) !important;
+}

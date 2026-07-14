@@ -12,25 +12,25 @@ const Dashboard = () => {
     {
       title: t('sidebar.pdfSummarizer'),
       description: t('dashboard.pdfDesc'),
-      icon: <FileText className="w-6 h-6 text-white" />,
+      icon: <FileText className="w-6 h-6 text-main" />,
       path: '/pdf-summarizer'
     },
     {
       title: t('sidebar.flashCards'),
       description: t('dashboard.flashCardsDesc'),
-      icon: <Layers className="w-6 h-6 text-white" />,
+      icon: <Layers className="w-6 h-6 text-main" />,
       path: '/flashcards'
     },
     {
       title: t('sidebar.quiz'),
       description: t('dashboard.quizDesc'),
-      icon: <HelpCircle className="w-6 h-6 text-white" />,
+      icon: <HelpCircle className="w-6 h-6 text-main" />,
       path: '/quiz'
     },
     {
       title: t('sidebar.smartNotes'),
       description: t('dashboard.smartNotesDesc'),
-      icon: <BookOpen className="w-6 h-6 text-white" />,
+      icon: <BookOpen className="w-6 h-6 text-main" />,
       path: '/smart-notes'
     }
   ];

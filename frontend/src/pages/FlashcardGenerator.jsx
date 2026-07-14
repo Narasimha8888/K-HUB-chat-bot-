@@ -219,7 +219,7 @@ const FlashcardGenerator = () => {
               setTopic('');
               setError('');
             }}
-            className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors font-medium whitespace-nowrap shrink-0 text-sm"
+            className="bg-gray-800 text-main px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors font-medium whitespace-nowrap shrink-0 text-sm"
           >
             Create New Flashcards
           </button>
@@ -237,7 +237,7 @@ const FlashcardGenerator = () => {
               {/* Front side */}
               <div className="absolute inset-0 w-full h-full backface-hidden bg-white border border-gray-200 rounded-3xl p-8 md:p-12 shadow-xl flex flex-col items-center justify-center text-center">
                 <span className="text-red-400 font-bold tracking-widest text-sm mb-8 uppercase">Question</span>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-800 leading-tight mb-8">
+                <h2 className="text-3xl md:text-4xl font-bold text-[#111827] leading-tight mb-8">
                   {flashcards[currentIndex].question}
                 </h2>
                 <div className="mt-auto pt-8">
@@ -316,25 +316,25 @@ const FlashcardGenerator = () => {
                     <span className="text-gray-400 text-sm font-medium mr-2">How was it?</span>
                     <button 
                       onClick={() => handleFeedback('Easy')}
-                      className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${flashcards[currentIndex].status === 'Easy' ? 'bg-green-500/20 border-green-500 text-green-400' : 'bg-gray-800 border-gray-600 text-gray-300 hover:border-gray-500'}`}
+                      className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${flashcards[currentIndex].status === 'Easy' ? 'bg-green-500/20 border-green-500 text-green-400' : 'bg-gray-800 border-gray-600 text-main hover:border-gray-500'}`}
                     >
                       <CheckCircle2 className="w-4 h-4" /> Easy
                     </button>
                     <button 
                       onClick={() => handleFeedback('Medium')}
-                      className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${flashcards[currentIndex].status === 'Medium' ? 'bg-yellow-500/20 border-yellow-500 text-yellow-400' : 'bg-gray-800 border-gray-600 text-gray-300 hover:border-gray-500'}`}
+                      className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${flashcards[currentIndex].status === 'Medium' ? 'bg-yellow-500/20 border-yellow-500 text-yellow-400' : 'bg-gray-800 border-gray-600 text-main hover:border-gray-500'}`}
                     >
                       <MinusCircle className="w-4 h-4" /> Medium
                     </button>
                     <button 
                       onClick={() => handleFeedback('Hard')}
-                      className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${flashcards[currentIndex].status === 'Hard' ? 'bg-orange-500/20 border-orange-500 text-orange-400' : 'bg-gray-800 border-gray-600 text-gray-300 hover:border-gray-500'}`}
+                      className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${flashcards[currentIndex].status === 'Hard' ? 'bg-orange-500/20 border-orange-500 text-orange-400' : 'bg-gray-800 border-gray-600 text-main hover:border-gray-500'}`}
                     >
                       <HelpCircle className="w-4 h-4" /> Hard
                     </button>
                     <button 
                       onClick={() => handleFeedback("Didn't Know")}
-                      className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${flashcards[currentIndex].status === "Didn't Know" ? 'bg-red-500/20 border-red-500 text-red-400' : 'bg-gray-800 border-gray-600 text-gray-300 hover:border-gray-500'}`}
+                      className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${flashcards[currentIndex].status === "Didn't Know" ? 'bg-red-500/20 border-red-500 text-red-400' : 'bg-gray-800 border-gray-600 text-main hover:border-gray-500'}`}
                     >
                       <XCircle className="w-4 h-4" /> Missed
                     </button>
@@ -342,7 +342,7 @@ const FlashcardGenerator = () => {
                   
                   <button 
                     onClick={() => handleBookmark()}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-colors w-full md:w-auto justify-center ${flashcards[currentIndex].is_bookmarked ? 'bg-primary/20 border-primary text-primary' : 'bg-gray-800 border-gray-600 text-gray-300 hover:border-gray-500'}`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border transition-colors w-full md:w-auto justify-center ${flashcards[currentIndex].is_bookmarked ? 'bg-primary/20 border-primary text-primary' : 'bg-gray-800 border-gray-600 text-main hover:border-gray-500'}`}
                   >
                     <Bookmark className={`w-4 h-4 ${flashcards[currentIndex].is_bookmarked ? 'fill-current' : ''}`} /> 
                     {flashcards[currentIndex].is_bookmarked ? 'Bookmarked' : 'Bookmark'}
@@ -353,7 +353,7 @@ const FlashcardGenerator = () => {
 
           {!isGenerating && !error && (
             <div className="w-full bg-gray-800/80 border border-gray-700 p-8 rounded-2xl text-center mt-12">
-              <h3 className="text-xl font-bold text-white mb-2">Want to study another topic?</h3>
+              <h3 className="text-xl font-bold text-main mb-2">Want to study another topic?</h3>
               <p className="text-gray-400 mb-6">You've completed this set of {flashcards.length} cards.</p>
               <button
                 onClick={() => {
@@ -362,7 +362,7 @@ const FlashcardGenerator = () => {
                   setTopic('');
                   setError('');
                 }}
-                className="bg-gray-700 text-white px-8 py-3 rounded-xl hover:bg-gray-600 transition-colors font-medium"
+                className="bg-gray-700 text-main px-8 py-3 rounded-xl hover:bg-gray-600 transition-colors font-medium"
               >
                 Create New Flashcards
               </button>

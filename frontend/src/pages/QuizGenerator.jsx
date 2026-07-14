@@ -152,25 +152,25 @@ const QuizGenerator = () => {
 
     return (
       <div key={q.id} className="bg-gray-800/40 border border-gray-800 rounded-xl p-5">
-        <p className="font-semibold text-white mb-4 text-lg">{q.question}</p>
+        <p className="font-semibold text-main mb-4 text-lg">{q.question}</p>
         
         {/* MCQ Options */}
         {q.options && q.options.length > 0 && (
           <div className="space-y-3">
             {q.options.map((option, idx) => {
-              let optionClass = "border-gray-700 hover:border-primary/50 text-gray-300";
+              let optionClass = "border-gray-700 hover:border-primary/50 text-main";
               
               if (userAnswer === option) {
-                optionClass = "border-primary bg-primary/10 text-white";
+                optionClass = "border-primary bg-primary/10 text-main";
               }
               
               if (showResults) {
                 const isThisOptionCorrect = checkIsCorrect(option, q.answer);
 
                 if (isThisOptionCorrect) {
-                  optionClass = "border-[#0bc284] bg-[#0bc284]/20 text-white"; // Correct answer highlighted green
+                  optionClass = "border-[#0bc284] bg-[#0bc284]/20 text-main"; // Correct answer highlighted green
                 } else if (userAnswer === option && !isCorrect) {
-                  optionClass = "border-red-500 bg-red-500/20 text-white"; // Wrong answer highlighted red
+                  optionClass = "border-red-500 bg-red-500/20 text-main"; // Wrong answer highlighted red
                 } else {
                   optionClass = "border-gray-800 opacity-50";
                 }
@@ -199,7 +199,7 @@ const QuizGenerator = () => {
               value={userAnswer || ''}
               onChange={(e) => handleSelectAnswer(q.id, e.target.value)}
               disabled={showResults}
-              className="w-full bg-input border-2 border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:border-primary"
+              className="w-full bg-input border-2 border-gray-700 text-main rounded-xl py-3 px-4 focus:outline-none focus:border-primary"
             />
           </div>
         )}
@@ -213,7 +213,7 @@ const QuizGenerator = () => {
                 {isCorrect ? 'Correct!' : `Incorrect. The correct answer is: ${q.answer}`}
               </p>
               {q.explanation && (
-                <p className="text-gray-300 text-sm mt-2 leading-relaxed">{q.explanation}</p>
+                <p className="text-main text-sm mt-2 leading-relaxed">{q.explanation}</p>
               )}
             </div>
           </div>
@@ -229,7 +229,7 @@ const QuizGenerator = () => {
           <HelpCircle className="w-7 h-7 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">Quiz Generator</h1>
+          <h1 className="text-2xl font-bold text-main mb-1">Quiz Generator</h1>
           <p className="text-gray-400">Generate interactive quizzes on any educational topic.</p>
         </div>
       </div>
@@ -245,7 +245,7 @@ const QuizGenerator = () => {
                 onChange={(e) => setTopic(e.target.value)}
                 placeholder="Enter a topic (e.g. World War II, Photosynthesis)"
                 disabled={isGenerating || !!quizData || !!error}
-                className="w-full bg-input border-2 border-gray-700 text-white placeholder-gray-600 rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:border-primary transition-colors disabled:opacity-50"
+                className="w-full bg-input border-2 border-gray-700 text-main placeholder-gray-600 rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:border-primary transition-colors disabled:opacity-50"
               />
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
                 <VoiceInput value={topic} onChange={setTopic} />
@@ -258,7 +258,7 @@ const QuizGenerator = () => {
               value={quizType}
               onChange={(e) => setQuizType(e.target.value)}
               disabled={isGenerating || !!quizData || !!error}
-              className="w-full bg-input border-2 border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:border-primary appearance-none disabled:opacity-50"
+              className="w-full bg-input border-2 border-gray-700 text-main rounded-xl py-3 px-4 focus:outline-none focus:border-primary appearance-none disabled:opacity-50"
             >
               <option value="Multiple Choice Questions (MCQ)">Multiple Choice</option>
               <option value="True / False">True / False</option>
@@ -271,7 +271,7 @@ const QuizGenerator = () => {
               value={difficulty}
               onChange={(e) => setDifficulty(e.target.value)}
               disabled={isGenerating || !!quizData || !!error}
-              className="w-full bg-input border-2 border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:border-primary appearance-none disabled:opacity-50"
+              className="w-full bg-input border-2 border-gray-700 text-main rounded-xl py-3 px-4 focus:outline-none focus:border-primary appearance-none disabled:opacity-50"
             >
               <option value="Easy">Easy</option>
               <option value="Medium">Medium</option>
@@ -285,7 +285,7 @@ const QuizGenerator = () => {
               value={totalQuestions}
               onChange={(e) => setTotalQuestions(e.target.value)}
               disabled={isGenerating || !!quizData || !!error}
-              className="w-full bg-input border-2 border-gray-700 text-white rounded-xl py-3 px-4 focus:outline-none focus:border-primary appearance-none disabled:opacity-50"
+              className="w-full bg-input border-2 border-gray-700 text-main rounded-xl py-3 px-4 focus:outline-none focus:border-primary appearance-none disabled:opacity-50"
             >
               <option value={3}>3 Questions</option>
               <option value={5}>5 Questions</option>
@@ -326,7 +326,7 @@ const QuizGenerator = () => {
               setTopic('');
               setError('');
             }}
-            className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors font-medium whitespace-nowrap shrink-0"
+            className="bg-gray-800 text-main px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors font-medium whitespace-nowrap shrink-0"
           >
             Create New Quiz
           </button>
@@ -336,7 +336,7 @@ const QuizGenerator = () => {
       {quizData && quizData.questions && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-xl font-bold text-main">
               {quizData.topic} <span className="text-gray-500 font-normal text-base ml-2">({quizData.difficulty})</span>
             </h2>
           </div>
@@ -356,8 +356,8 @@ const QuizGenerator = () => {
 
           {showResults && (
             <div className="bg-gray-800/80 border border-gray-700 p-8 rounded-2xl text-center mt-8">
-              <h3 className="text-2xl font-bold text-white mb-2">Quiz Complete!</h3>
-              <p className="text-gray-400">Review your answers and explanations above.</p>
+              <h3 className="text-2xl font-bold text-main mb-2">Quiz Complete!</h3>
+              <p className="text-main">Review your answers and explanations above.</p>
               <button
                 onClick={() => {
                   navigate('/quiz');
@@ -366,7 +366,7 @@ const QuizGenerator = () => {
                   setShowResults(false);
                   setTopic('');
                 }}
-                className="mt-6 bg-gray-700 text-white px-8 py-3 rounded-xl hover:bg-gray-600 transition-colors font-medium"
+                className="mt-6 bg-gray-700 text-main px-8 py-3 rounded-xl hover:bg-gray-600 transition-colors font-medium"
               >
                 Create New Quiz
               </button>

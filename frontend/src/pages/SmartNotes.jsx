@@ -125,7 +125,7 @@ const SmartNotes = () => {
           <BookOpen className="w-7 h-7 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-white mb-1">Smart Notes</h1>
+          <h1 className="text-2xl font-bold text-main mb-1">Smart Notes</h1>
           <p className="text-gray-400">Type rough thoughts and have AI structure them into Markdown study notes.</p>
         </div>
       </div>
@@ -139,7 +139,7 @@ const SmartNotes = () => {
             placeholder="e.g., mitochondria power house, ATP production, outer inner membrane..."
             rows={5}
             disabled={isGenerating || !!notes || !!error}
-            className="w-full bg-input border-2 border-gray-700 text-white placeholder-gray-600 rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:border-primary transition-colors resize-none disabled:opacity-50"
+            className="w-full bg-input border-2 border-gray-700 text-main placeholder-gray-600 rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:border-primary transition-colors resize-none disabled:opacity-50"
           />
           <div className="absolute right-2 top-2 flex items-start">
             <VoiceInput value={rawText} onChange={setRawText} />
@@ -176,7 +176,7 @@ const SmartNotes = () => {
               setRawText('');
               setError('');
             }}
-            className="bg-gray-800 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors font-medium whitespace-nowrap shrink-0"
+            className="bg-gray-800 text-main px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors font-medium whitespace-nowrap shrink-0"
           >
             Create New Notes
           </button>
@@ -191,13 +191,13 @@ const SmartNotes = () => {
                 <div className="relative">
                   <button
                     onClick={handleCopy}
-                    className="p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors flex items-center justify-center"
+                    className="p-2 bg-gray-800 hover:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-lg transition-colors flex items-center justify-center"
                     title="Copy Notes"
                   >
                     {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
                   </button>
                   {copied && (
-                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-800 border border-gray-700 text-white text-xs py-1.5 px-3 rounded-lg shadow-lg flex items-center gap-1.5 whitespace-nowrap z-20">
+                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-800 border border-gray-700 text-main text-xs py-1.5 px-3 rounded-lg shadow-lg flex items-center gap-1.5 whitespace-nowrap z-20">
                       <Check className="w-3.5 h-3.5 text-green-500" />
                       <span className="font-medium">Copied!</span>
                     </div>
@@ -205,14 +205,14 @@ const SmartNotes = () => {
                 </div>
                 <button
                   onClick={handleDownload}
-                  className="p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors flex items-center justify-center"
+                  className="p-2 bg-gray-800 hover:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-lg transition-colors flex items-center justify-center"
                   title="Download as DOC"
                 >
                   <Download className="w-4 h-4" />
                 </button>
               </div>
             )}
-            <div className="prose prose-invert max-w-none prose-headings:text-primary prose-a:text-[#0bc284] prose-strong:text-white pt-10 sm:pt-0">
+            <div className="prose max-w-none prose-headings:text-primary prose-a:text-[#0bc284] prose-strong:text-main pt-10 sm:pt-0">
               <ReactMarkdown>{notes}</ReactMarkdown>
             </div>
             {isGenerating && (
@@ -226,7 +226,7 @@ const SmartNotes = () => {
 
           {!isGenerating && !error && (
             <div className="bg-gray-800/80 border border-gray-700 p-8 rounded-2xl text-center mt-8">
-              <h3 className="text-2xl font-bold text-white mb-2">Smart Notes Complete!</h3>
+              <h3 className="text-2xl font-bold text-main mb-2">Smart Notes Complete!</h3>
               <p className="text-gray-400">Review your structured notes above.</p>
               <button
                 onClick={() => {
@@ -235,7 +235,7 @@ const SmartNotes = () => {
                   setRawText('');
                   setError('');
                 }}
-                className="mt-6 bg-gray-700 text-white px-8 py-3 rounded-xl hover:bg-gray-600 transition-colors font-medium"
+                className="mt-6 bg-gray-700 text-main px-8 py-3 rounded-xl hover:bg-gray-600 transition-colors font-medium"
               >
                 Create New Notes
               </button>

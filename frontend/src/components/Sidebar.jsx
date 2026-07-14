@@ -42,13 +42,13 @@ const Sidebar = ({ isSidebarOpen }) => {
         <div className="bg-primary/20 p-2 rounded-full flex items-center justify-center shrink-0">
           <GraduationCap className="w-6 h-6 text-primary" />
         </div>
-        {isSidebarOpen && <h1 className="font-bold text-xl tracking-tight text-white whitespace-nowrap">{t('sidebar.studyMode')}</h1>}
+        {isSidebarOpen && <h1 className="font-bold text-xl tracking-tight text-main whitespace-nowrap">{t('sidebar.studyMode')}</h1>}
       </div>
 
       <div className={`mt-6 ${isSidebarOpen ? 'px-4' : 'px-3 flex justify-center'}`}>
         <button
           onClick={() => navigate('/chat')}
-          className={`bg-gray-800/50 hover:bg-gray-800 text-white font-medium py-2.5 rounded-lg flex items-center justify-center transition-colors border border-gray-700
+          className={`bg-gray-800/50 hover:bg-gray-800 text-main font-medium py-2.5 rounded-lg flex items-center justify-center transition-colors border border-gray-700
             ${isSidebarOpen ? 'w-full px-4 gap-3' : 'w-12 h-12'}`}
           title={t('sidebar.newChat')}
         >
@@ -66,7 +66,7 @@ const Sidebar = ({ isSidebarOpen }) => {
             className={({ isActive }) =>
               `flex items-center rounded-lg transition-colors font-medium text-sm
               ${isSidebarOpen ? 'gap-3 px-3 py-2.5 w-full' : 'justify-center w-12 h-12 mb-1'}
-              ${isActive ? 'bg-gray-800/80 text-white' : 'text-gray-400 hover:text-white hover:bg-gray-800/40'}`
+              ${isActive ? 'bg-gray-800/80 text-main' : 'text-gray-400 hover:text-main hover:bg-gray-800/40'}`
             }
           >
             <item.icon className="w-5 h-5 shrink-0" />
@@ -87,7 +87,7 @@ const Sidebar = ({ isSidebarOpen }) => {
             <div
               key={`${item.type}-${item.id}`}
               onClick={() => navigate(item.path)}
-              className={`flex items-center gap-3 py-2 px-2 rounded-lg cursor-pointer text-gray-400 hover:text-white hover:bg-gray-800/40 transition-colors
+              className={`flex items-center gap-3 py-2 px-2 rounded-lg cursor-pointer text-gray-400 hover:text-main hover:bg-gray-800/40 transition-colors
                 ${isSidebarOpen ? 'w-full' : 'justify-center w-12 h-12 mb-1'}`}
               title={item.title}
             >
